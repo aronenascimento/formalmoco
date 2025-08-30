@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento de Almoços - Setembro 2025</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- Tela de Formulário -->
+        <div id="formScreen" class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Agendamento de Almoços</h1>
+                <p class="text-gray-600">Setembro 2025</p>
+            </div>
+
+            <form id="lunchForm" class="space-y-6">
+                <!-- Nome -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Qual o seu nome?
+                    </label>
+                    <input type="text" id="name" name="name" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Data -->
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                        Selecione abaixo a data do seu almoço:
+                    </label>
+                    <select id="date" name="date" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option value="">Selecione uma data</option>
+                    </select>
+                </div>
+
+                <!-- Quantidade de duplas -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Você pode dar almoço para quantas duplas?
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="couples" value="uma" class="mr-3 text-blue-600">
+                            <span>Uma</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="couples" value="duas" class="mr-3 text-blue-600">
+                            <span>Duas</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Seleção de dupla (aparece apenas se "Uma" for selecionada) -->
+                <div id="coupleSelection" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Para qual dupla?
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="whichCouple" value="sisteres" class="mr-3 text-blue-600">
+                            <span>Sisteres</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="whichCouple" value="elderes" class="mr-3 text-blue-600">
+                            <span>Elderes</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Mensagem de disponibilidade -->
+                <div id="availabilityMessage" class="hidden p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p class="text-yellow-800 text-sm"></p>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-4">
+                    <button type="submit" 
+                            class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all transform hover:scale-105 shadow-lg">
+                        Agendar Almoço
+                    </button>
+                    <button type="button" id="viewCalendarsBtn"
+                            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all">
+                        Ver Calendários
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tela de Confirmação -->
+        <div id="confirmationScreen" class="hidden bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div class="mb-6">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Agendamento Confirmado!</h2>
+                <p class="text-gray-600">Seu almoço foi agendado com sucesso.</p>
+            </div>
+            
+            <div id="confirmationDetails" class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                <!-- Detalhes serão preenchidos via JavaScript -->
+            </div>
+
+            <button id="viewCalendarsFromConfirmation"
+                    class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all">
+                Ver Calendários
+            </button>
+        </div>
+
+        <!-- Tela de Calendários -->
+        <div id="calendarsScreen" class="hidden bg-white rounded-2xl shadow-xl p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Calendários de Setembro 2025</h2>
+                <button id="backToForm" class="text-blue-600 hover:text-blue-800 transition-colors">
+                    ← Voltar ao formulário
+                </button>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Calendário Sisteres -->
+                <div>
+                    <h3 class="text-lg font-semibold text-pink-700 mb-4 text-center">Calendário das Sisteres</h3>
+                    <div id="sisteresCalendar" class="space-y-2">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Calendário Elderes -->
+                <div>
+                    <h3 class="text-lg font-semibold text-blue-700 mb-4 text-center">Calendário dos Elderes</h3>
+                    <div id="elderesCalendar" class="space-y-2">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
